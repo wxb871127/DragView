@@ -78,4 +78,11 @@ public class DragAdapter{
         unselectList.add(item);
     }
 
+    public void changeSelectPosition(int position1, int position2){
+        selectList.set(position1, selectList.set(position2, selectList.get(position1)));
+    }
+
+    public List<String> getSelectList(){
+        return selectList;
+    }
 }

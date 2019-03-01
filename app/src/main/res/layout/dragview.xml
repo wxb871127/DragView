@@ -9,7 +9,8 @@
         <com.dragview.DragView
             android:id="@+id/dragview"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
             <TextView
                 android:layout_width="match_parent"
@@ -22,5 +23,20 @@
 
         </com.dragview.DragView>
 
-
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:orientation="horizontal">
+        <Button
+            android:text="直接交换位置"
+            android:onClick="changePosition1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button
+            android:text="移动交换位置"
+            android:onClick="changePosition2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </LinearLayout>

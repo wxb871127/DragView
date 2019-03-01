@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.TranslateAnimation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,10 @@ public class DragView extends ViewGroup {
 
     private float dragViewX;
     private float dragViewY;
-    private View draggingView;
+    private View draggingView;//拖拽的itemView
+    private int changeViewPosition;//被替换的itemView 位置
+
+    private int changeMode;
 
     public DragView(Context context) {
         this(context, null);
@@ -56,6 +60,10 @@ public class DragView extends ViewGroup {
         horizontalPadding = 10;
         ratio = 1.2f;
         vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+    }
+
+    public void setChangeMode(int mode){
+        this.changeMode = mode;
     }
 
     private OnClickListener listener = new OnClickListener() {
@@ -241,12 +249,17 @@ public class DragView extends ViewGroup {
                     updateDragViewPosition((int)(ev.getX() - dragViewX), (int)(ev.getY() - dragViewY));
                     dragViewX = ev.getX();
                     dragViewY = ev.getY();
+                    changeViewPosition = getDragItemViewPosition();
+                    if(changeMode == 2)
+                        changeViewPosition2();
                 }
                 break;
             case MotionEvent.ACTION_UP:
                 default:
                 if(draggingView != null){
                     getParent().requestDisallowInterceptTouchEvent(false);
+                    if(changeMode == 1)
+                        changeViewPosition1();
                     draggingView.requestLayout();
                     draggingView = null;
                 }
@@ -272,5 +285,61 @@ public class DragView extends ViewGroup {
         layoutParams.topMargin = top;
         draggingView.setLayoutParams(layoutParams);
         draggingView.requestLayout();
+    }
+
+    //获取拖动位置上的itemView的索引
+    private int getDragItemViewPosition(){
+        int left = (int)dragViewX - getPaddingLeft();
+        int top = (int)dragViewY - getPaddingTop() - selectViewTitle.getHeight();
+        int colum = left / itemWidth + (left % itemWidth == 0 ? 0 : 1);
+        int row = top / itemHeight + (top % itemHeight == 0 ? 0 : 1);
+        int position = 0;
+        position = (row-1) * this.colum + colum-1;
+        if(position >= selectViewList.size())
+            position = selectViewList.indexOf(draggingView);
+        Log.e("xxxxxxxxx", "changePosition = "+position + ",row ="+ row + ",colum = " + colum);
+        return position;
+    }
+
+    //draggingView直接交换itemView位置
+    private void changeViewPosition1(){
+        int dragViewPosition = selectViewList.indexOf(draggingView);
+        if(changeViewPosition != dragViewPosition){
+            dragAdapter.changeSelectPosition(dragViewPosition,changeViewPosition);
+            selectViewList.set(dragViewPosition, selectViewList.set(changeViewPosition, selectViewList.get(dragViewPosition)));
+        }
+    }
+
+    //先顺序移动itemView位置，再与draggingView交换位置
+    private void changeViewPosition2(){
+        int dragViewPosition = selectViewList.indexOf(draggingView);
+        if(dragViewPosition == changeViewPosition)
+            return;
+        //删除draggingView并添加到changeViewPosition的位置，从新排序selectViewList的顺序，
+        //使得从draggingView + 1 的位置开始一次需要移动一个itemView的位置
+        selectViewList.remove(dragViewPosition);
+        selectViewList.add(changeViewPosition, draggingView);
+        dragAdapter.changeSelectPosition(dragViewPosition,changeViewPosition);
+        List list = dragAdapter.getSelectList();
+
+        dragViewPosition = changeViewPosition;
+        for(int i=0; i<selectViewList.size(); i++){
+            if(i == dragViewPosition) continue;
+            int moveRow = i / colum;
+            int moveColum = i - moveRow * colum;
+            View view = selectViewList.get(i);
+            MarginLayoutParams params = (MarginLayoutParams) view.getLayoutParams();
+            int endX = moveColum * (itemWidth + horizontalPadding) + getPaddingLeft();
+            int endY = moveRow * (itemHeight + vertivcalPadding) + getPaddingTop() + selectViewTitle.getMeasuredHeight();
+            translateAnnia(view, params.leftMargin, endX, params.topMargin, endY);
+            params.leftMargin = endX;
+            params.topMargin = endY;
+        }
+    }
+
+    private void translateAnnia(View view, int startX, int endX, int startY, int endY){
+        TranslateAnimation animation = new TranslateAnimation(startX - endX, 0, startY - endY, 0);
+        animation.setDuration(200);
+        view.startAnimation(animation);
     }
 }

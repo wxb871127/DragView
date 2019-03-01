@@ -2,18 +2,20 @@ package com.dragview;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
 import dragview.com.dragview.R;
 
 public class DragActivity extends AppCompatActivity {
+    DragView dragView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.dragview);
-        DragView dragView = (DragView) findViewById(R.id.dragview);
+        dragView = findViewById(R.id.dragview);
         List<String> selectList = new ArrayList<>();
         selectList.add("林浩1");
         selectList.add("林浩2");
@@ -33,5 +35,13 @@ public class DragActivity extends AppCompatActivity {
         DragAdapter dragAdapter = new DragAdapter(this,selectList ,unselectList);
         dragView.setAdapter(dragAdapter);
 
+    }
+
+    public void changePosition1(View view){
+        dragView.setChangeMode(1);
+    }
+
+    public void changePosition2(View view){
+        dragView.setChangeMode(2);
     }
 }
