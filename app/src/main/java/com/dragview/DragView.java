@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Vibrator;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,6 +86,7 @@ public class DragView extends ViewGroup {
         public boolean onLongClick(View v) {
             vibrator.vibrate(200);
             draggingView = v;
+            draggingView.bringToFront();
             return  true;
         }
     };
@@ -184,19 +186,19 @@ public class DragView extends ViewGroup {
                     top += vertivcalPadding;
                 else
                     top +=  itemHeight + vertivcalPadding;
-                for(int j=0; j<colum; j++){
-                    position = i*colum + j;
-                    if(position == dragAdapter.getSelectCount()) {
+                for(int j=0; j<colum; j++) {
+                    position = i * colum + j;
+                    if (position == dragAdapter.getSelectCount()) {
                         break;
                     }
                     itemView = selectViewList.get(position);
-                    left = j*itemWidth + (j+1)*horizontalPadding;
-                    if(draggingView == itemView) {
-                        int leftMargin = ((MarginLayoutParams)draggingView.getLayoutParams()).leftMargin;
-                        int topMargin = ((MarginLayoutParams)draggingView.getLayoutParams()).topMargin;
-                        itemView.layout(left + leftMargin,top+topMargin ,left+leftMargin + itemWidth , top+topMargin+itemHeight);
-                    }else
-                        itemView.layout(left,top ,left + itemWidth , top+itemHeight);
+                    left = j * itemWidth + (j + 1) * horizontalPadding;
+                    MarginLayoutParams params = (MarginLayoutParams) itemView.getLayoutParams();
+                    if (draggingView != itemView) {
+                        params.leftMargin = left;
+                        params.topMargin = top;
+                    }
+                    itemView.layout(params.leftMargin, params.topMargin, params.leftMargin + itemWidth, params.topMargin + itemHeight);
                 }
             }
             top += itemHeight + vertivcalPadding;
@@ -237,6 +239,8 @@ public class DragView extends ViewGroup {
                 if(draggingView != null) {
                     getParent().requestDisallowInterceptTouchEvent(true);
                     updateDragViewPosition((int)(ev.getX() - dragViewX), (int)(ev.getY() - dragViewY));
+                    dragViewX = ev.getX();
+                    dragViewY = ev.getY();
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -253,9 +257,8 @@ public class DragView extends ViewGroup {
 
     private void updateDragViewPosition(int x, int y){
         MarginLayoutParams layoutParams = (MarginLayoutParams)draggingView.getLayoutParams();
-        int left = layoutParams.leftMargin + x;
-        int top = layoutParams.topMargin + y;
-
+        int left =  layoutParams.leftMargin + x;
+        int top =   layoutParams.topMargin + y;
         //边界处理
         left = Math.max(getPaddingLeft(), left);
         left = Math.min(getWidth() - itemWidth - getPaddingRight(), left);
@@ -265,11 +268,9 @@ public class DragView extends ViewGroup {
 
         top = Math.max(rect.top + getPaddingTop(), top);
         top = Math.min(rect.bottom - itemHeight - getPaddingBottom(), top);
-//        layoutParams.leftMargin = left;
-//        layoutParams.topMargin = top;
-//        draggingView.setLayoutParams(layoutParams);
-        ((MarginLayoutParams) draggingView.getLayoutParams()).leftMargin = left;
-        ((MarginLayoutParams) draggingView.getLayoutParams()).topMargin = top;
+        layoutParams.leftMargin = left;
+        layoutParams.topMargin = top;
+        draggingView.setLayoutParams(layoutParams);
         draggingView.requestLayout();
     }
 }
