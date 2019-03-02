@@ -345,22 +345,27 @@ public class DragView extends ViewGroup {
     private void translateAnnia(View view, int startX, int endX, int startY, int endY){
         TranslateAnimation animation = new TranslateAnimation(startX - endX, 0, startY - endY, 0);
         animation.setDuration(200);
-
-        AnimationSet animationSet = new AnimationSet(false);
+        Animation rotateAnim = new RotateAnimation(-2, 2,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        rotateAnim.setDuration(100);
+        rotateAnim.setRepeatMode(Animation.REVERSE);
+        rotateAnim.setRepeatCount(-1);
+        AnimationSet animationSet = new AnimationSet(true);
         animationSet.addAnimation(animation);
-        view.startAnimation(animation);
+        animationSet.addAnimation(rotateAnim);
+        view.startAnimation(animationSet);
     }
 
     private void shakeAnnia() {
+        Animation rotateAnim = new RotateAnimation(-2, 2,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        rotateAnim.setDuration(100);
+        rotateAnim.setRepeatMode(Animation.REVERSE);
+        rotateAnim.setRepeatCount(-1);
         for(int i=0; i<selectViewList.size(); i++) {
             View view = selectViewList.get(i);
             if(view == draggingView)
                 continue;
-            Animation rotateAnim = new RotateAnimation(-2, 2,
-                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-            rotateAnim.setDuration(100);
-            rotateAnim.setRepeatMode(Animation.REVERSE);
-            rotateAnim.setRepeatCount(-1);
             view.startAnimation(rotateAnim);
         }
     }
